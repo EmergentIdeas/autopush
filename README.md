@@ -17,7 +17,7 @@ branch (or whatever the locally deployed branch is).
 3. Download the script https://raw.github.com/EmergentIdeas/autopush/master/autopush.pl
 4. Modify and uncomment the email to/from/subject variables if you want to be sent emails.
 5. Create /etc/autopush.conf
-6. Add entries (as explained in the script) to autopush.conf like: <path> [<repo>] [<branch_refspec>]
+6. Add entries (as explained in the script) to autopush.conf like: &lt;path&gt; [&lt;repo&gt;] [&lt;branch_refspec&gt;]
 7. Copy the script to /etc/cron.daily
 8. Change x bit so it can be run.
 
