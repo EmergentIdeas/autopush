@@ -3,6 +3,9 @@
 # The location of the config file that 
 $configFileLocation = '/etc/autopush.conf';
 
+# git defaults
+$defaultRepo = 'origin';
+$defaultBranch = 'master';
 
 # handle command line parameters
 if ( @ARGV > 0 ) {
@@ -32,9 +35,27 @@ open LOCS, "< $configFileLocation" or die "unable to open configuration file: $c
 
 while(<LOCS>) {
 	chomp;
-	@parts = split /\s+/;
-	foreach my $part (@parts) {
-		print $part . "\n";
+	(my $location, my $repo, my $branch) = split /\s+/;
+	if(!$repo) {
+		$repo = $defaultRepo;
+	}
+	if(!$branch) {
+		$branch = $defaultBranch;
+	}
+	
+	
+	if(index($location, '*') != -1 or index($location, '?') != -1) {
+			$findCommand = "ls -d $location 2>/dev/null";
+			@expanded = `$findCommand`;
+			foreach my $expdir (@expanded) {
+				chomp $expdir;
+				print "$expdir $repo $branch \n";
+				processDirectory($expdir, $repo, $branch);
+			}			
+	}
+	else {
+		print "$location $repo $branch \n";
+		processDirectory($location, $repo, $branch);
 	}
 }
 
