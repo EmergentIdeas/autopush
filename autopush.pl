@@ -74,8 +74,8 @@ sub processDirectory {
 	my $repo = shift @_;
 	my $branch = shift @_;
 	
-	`cd $dir`;
-	`git add -A`;
-	`git commit -m "now"`;
-	'git push $repo $branch';
+	print `cd $dir`;
+	print `git add -A`;
+	print `git commit -m "now"`;
+	print 'git push $repo $branch';
 }
