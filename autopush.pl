@@ -120,5 +120,5 @@ sub sendResponseEmail {
 }
 
 sub issueSendEmailCommand {
-	`mail $emailTo < $emailTempPath`;
+	print `mail $emailTo < $emailTempPath`;
 }
