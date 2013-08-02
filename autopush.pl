@@ -77,5 +77,5 @@ sub processDirectory {
 	print `cd $dir`;
 	print `git add -A`;
 	print `git commit -m "now"`;
-	print 'git push $repo $branch';
+	print `git push $repo $branch`;
 }
