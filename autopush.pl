@@ -23,18 +23,26 @@
 # git sometimes returns an error that it doesn't know what to push. 
 $configFileLocation = '/etc/autopush.conf';
 
+# system information
+$now = localtime;
+$serverName = `hostname`;
+chomp $serverName;
+
+
 # git defaults
 $defaultRepo = 'origin';
 $defaultBranch = 'HEAD:deployed';
 
-$emailTo = 'dan@emergentideas.com';
-$emailFrom = 'dan@emergentideas.com';
-$emailSubject = 'autopush';
-
-$now = localtime;
-$serverName = `hostname`;
+# variables for sending email
 $emailTempPath = "/tmp/autopushmail";
 $emailResponse = "An autopush from $serverName at $now. \n";
+
+
+# email notification info, comment out for no email, uncomment to send email
+#$emailTo = 'somebody@somewhere.com';
+$emailFrom = 'somebody@somewhere.com';
+$emailSubject = "autopush $now";
+
 
 # handle command line parameters
 if ( @ARGV > 0 ) {
@@ -55,10 +63,6 @@ else {
 }
 
 
-
-print $configFileLocation . "\n";
-
-
 # load the locations to push
 open LOCS, "< $configFileLocation" or die "unable to open configuration file: $configFileLocation";
 
@@ -74,42 +78,47 @@ while(<LOCS>) {
 	
 	
 	if(index($location, '*') != -1 or index($location, '?') != -1) {
-			$findCommand = "ls -d $location 2>/dev/null";
-			@expanded = `$findCommand`;
-			foreach my $expdir (@expanded) {
-				chomp $expdir;
-#				print "$expdir $repo $branch \n";
-				processDirectory($expdir, $repo, $branch);
-			}			
+		# expand any locations that have a wildcard so that a single conf rule can
+		# be written for an entire class of files
+		$findCommand = "ls -d $location 2>/dev/null";
+		@expanded = `$findCommand`;
+		foreach my $expdir (@expanded) {
+			chomp $expdir;
+			processDirectory($expdir, $repo, $branch);
+		}			
 	}
 	else {
-#		print "$location $repo $branch \n";
 		processDirectory($location, $repo, $branch);
 	}
 }
 
+# send an email if to/from/subject variables are set about what happened
+sendResponseEmail();
 
-
+# print the help message
 sub printHelp {
 		print getHelpMsg();
 }
 
+# gets the actual text that describes the command format
 sub getHelpMsg() {
 	"This program takes commands in the form of: autopush.pl <config-file-location>\n";
 }
 
+# add all new, updated, and deleted files, commit the changes, push the changes to a remote branch
 sub processDirectory {
 	my $dir = shift @_;
 	my $repo = shift @_;
 	my $branch = shift @_;
 	
-	my $cmd = "cd $dir; git add -A; git commit -m now; git push $repo $branch";
+	my $cmd = "cd $dir 2>&1; git add -A 2>&1; git commit -m now 2>&1; git push $repo $branch 2>&1";
 	$emailResponse = $emailResponse . `$cmd` . "\n";
 }
 
+# create and send the response email. to/from/subject variables must be set
 sub sendResponseEmail {
 	if($emailTo and $emailFrom and $emailSubject) {
-		open(MAIL, $emailTempPath);
+		open(MAIL, ">" . $emailTempPath);
 		print MAIL "To: $emailTo\n";
 		print MAIL "From: $emailFrom\n";
 		print MAIL "Subject: $emailSubject\n";
@@ -117,8 +126,12 @@ sub sendResponseEmail {
 		close(MAIL);
 		issueSendEmailCommand();
 	}
+	else {
+		print "No email sent. Messages are:\n". $emailResponse;
+	}
 }
 
+# issue the actual command that mails our temp file
 sub issueSendEmailCommand {
-	print `mail $emailTo < $emailTempPath`;
+	print `mail -s $emailSubject $emailTo < $emailTempPath`;
 }
