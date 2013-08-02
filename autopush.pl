@@ -33,7 +33,9 @@ open LOCS, "< $configFileLocation" or die "unable to open configuration file: $c
 while(<LOCS>) {
 	chomp;
 	@parts = split /\s+/;
-	
+	foreach my $part (@parts) {
+		print $part . "\n";
+	}
 }
 
 
