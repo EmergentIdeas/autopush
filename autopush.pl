@@ -33,6 +33,9 @@ chomp $serverName;
 $defaultRepo = 'origin';
 $defaultBranch = 'HEAD:deployed';
 
+# A path to hold a script for running complex commands as another user
+$scriptTempPath = "/tmp/autopushcommands.sh";
+
 # variables for sending email
 $emailTempPath = "/tmp/autopushmail";
 $emailResponse = "An autopush from $serverName at $now. \n";
@@ -111,7 +114,18 @@ sub processDirectory {
 	my $repo = shift @_;
 	my $branch = shift @_;
 	
-	my $cmd = "cd $dir 2>&1; git add -A 2>&1; git commit -m now 2>&1; git push $repo $branch 2>&1";
+	# returns the user id of the directory so that we can run the git process as that user
+	# this will allow us to create and modify files without making them inaccessible to future use
+	# and (hopefully) reuse ssh config files of the owner
+	my $uid = (stat $dir . "/.git")[4];
+	
+	my $cmd = "cd $dir 2>&1  \ngit add -A 2>&1 \ngit commit -m now 2>&1 \ngit push $repo $branch 2>&1";	
+	open(CMDFILE, ">" . $scriptTempPath);
+	print CMDFILE '#!/bin/bash' . "\n";
+	print CMDFILE $cmd;
+	close(CMDFILE);
+	$cmd = "sudo -u \\#$uid bash $scriptTempPath";
+	print "The command: $cmd";
 	$emailResponse = $emailResponse . `$cmd` . "\n";
 }
 
