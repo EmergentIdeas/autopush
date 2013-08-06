@@ -114,10 +114,16 @@ sub processDirectory {
 	my $repo = shift @_;
 	my $branch = shift @_;
 	
+	my $gitdir = $dir . "/.git";
+	
+	# checking to see if there is a .git directory here
+	# if not, we shouldn't process this directory since it will fail
+	-e $gitdir or return;
+	
 	# returns the user id of the directory so that we can run the git process as that user
 	# this will allow us to create and modify files without making them inaccessible to future use
 	# and (hopefully) reuse ssh config files of the owner
-	my $uid = (stat $dir . "/.git")[4];
+	my $uid = (stat $gitdir)[4];
 	
 	my $cmd = "cd $dir 2>&1  \ngit add -A 2>&1 \ngit commit -m now 2>&1 \ngit push $repo $branch 2>&1";	
 	open(CMDFILE, ">" . $scriptTempPath);
@@ -125,7 +131,6 @@ sub processDirectory {
 	print CMDFILE $cmd;
 	close(CMDFILE);
 	$cmd = "sudo -u \\#$uid bash $scriptTempPath";
-	print "The command: $cmd";
 	$emailResponse = $emailResponse . `$cmd` . "\n";
 }
 
@@ -135,7 +140,7 @@ sub sendResponseEmail {
 		open(MAIL, ">" . $emailTempPath);
 		print MAIL "To: $emailTo\n";
 		print MAIL "From: $emailFrom\n";
-		print MAIL "Subject: $emailSubject\n";
+		print MAIL "Subject: $emailSubject\n\n";
 		print MAIL $emailResponse;
 		close(MAIL);
 		issueSendEmailCommand();
@@ -147,5 +152,6 @@ sub sendResponseEmail {
 
 # issue the actual command that mails our temp file
 sub issueSendEmailCommand {
-	print `mail -s $emailSubject $emailTo < $emailTempPath`;
+	my $cmd = "mail -s '$emailSubject' $emailTo < $emailTempPath";
+	print `$cmd`;
 }
