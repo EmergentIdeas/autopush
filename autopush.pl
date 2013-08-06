@@ -62,7 +62,7 @@ if ( @ARGV > 0 ) {
 }
 else {
 	# test the default location
-	-e $parm1 or die "The config file location $configFileLocation can not be found.\n";
+	-e $configFileLocation or die "The config file location $configFileLocation can not be found.\n";
 }
 
 
