@@ -131,6 +131,7 @@ sub processDirectory {
 	print CMDFILE $cmd;
 	close(CMDFILE);
 	$cmd = "sudo -u \\#$uid bash $scriptTempPath";
+	$emailResponse = $emailResponse . "\n\nProcessing: " . $dir . "\n";
 	$emailResponse = $emailResponse . `$cmd` . "\n";
 }
 
@@ -138,9 +139,6 @@ sub processDirectory {
 sub sendResponseEmail {
 	if($emailTo and $emailFrom and $emailSubject) {
 		open(MAIL, ">" . $emailTempPath);
-		print MAIL "To: $emailTo\n";
-		print MAIL "From: $emailFrom\n";
-		print MAIL "Subject: $emailSubject\n\n";
 		print MAIL $emailResponse;
 		close(MAIL);
 		issueSendEmailCommand();
