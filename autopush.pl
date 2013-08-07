@@ -43,7 +43,6 @@ $emailResponse = "An autopush from $serverName at $now. \n";
 
 # email notification info, comment out for no email, uncomment to send email
 #$emailTo = 'somebody@somewhere.com';
-$emailFrom = 'somebody@somewhere.com';
 $emailSubject = "autopush $now";
 
 
@@ -137,7 +136,7 @@ sub processDirectory {
 
 # create and send the response email. to/from/subject variables must be set
 sub sendResponseEmail {
-	if($emailTo and $emailFrom and $emailSubject) {
+	if($emailTo and $emailSubject) {
 		open(MAIL, ">" . $emailTempPath);
 		print MAIL $emailResponse;
 		close(MAIL);
