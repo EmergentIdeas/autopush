@@ -9,6 +9,7 @@ job) a later luser doesn't find it impossible to make commits to the repo.
 # Why
 
 I like to use private git repos as a way to deploy code to servers because:
+
 1. It's secure
 2. It's easy to add a bunch of files atomically and version them
 3. It's easy to deploy a new installation
